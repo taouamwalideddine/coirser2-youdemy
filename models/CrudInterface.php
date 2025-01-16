@@ -7,3 +7,4 @@ interface CrudInterface{
     public function delete($id);
     public function getAll();
 }
+
