@@ -94,7 +94,38 @@ abstract class User implements CrudInterface, UserInterface {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Implement UserInterface methods
+
+    public function getRole() {
+        return $this->role;
+    }
+    public function getStatus() {
+        return $this->status;
+    }
+
+    public function getId() {
+        return $this->id;
+    }
+
+    public function getUsername() {
+        return $this->username;
+    }
+
+    public function getEmail() {
+        return $this->email;
+    }
+    public function getPassword() {
+        return $this->password;
+    }
+    
+    public function setEmail($email) {
+        $this->email =$email;
+    }
+    public function setPassword($email) {
+        $this->email =$email;
+    }
+    public function setUsername($username) {
+        $this->username =$username;
+    }
 
     abstract public function getSpecificData();
 }
