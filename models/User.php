@@ -1,15 +1,15 @@
 <?php
 require_once 'CrudInterface.php';
 require_once 'UserInterface.php';
-
 abstract class User implements CrudInterface, UserInterface {
     protected $db;
     protected $id;
     protected $username;
     protected $email;
     protected $role;
-
-
+    protected $password;
+    protected $status;
+    
     public function __construct($db, $userData = null) {
         $this->db = $db;
         if ($userData) {
@@ -18,15 +18,29 @@ abstract class User implements CrudInterface, UserInterface {
             $this->email = $userData['email'];
         }
     }
-    public function create($data) {
-        $sql = "INSERT INTO users (username, email, password, role) VALUES (:username, :email, :password, :role)";
+    public function create($data){
+        echo "<pre>";
+        var_dump($data);
+        var_dump($this->db);
+        echo "</pre>";
+        echo $this->status;
+        $sql = "INSERT INTO public.users(
+	 username, email, password, role, status)
+	VALUES (:username, :email, :password, :role,:status)";
+        $password = password_hash($data['password'], PASSWORD_DEFAULT);
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':username', $data['username']);
         $stmt->bindParam(':email', $data['email']);
-        $stmt->bindParam(':password', password_hash($data['password'], PASSWORD_DEFAULT));
-        $stmt->bindParam(':role', $this->role);
-        return $stmt->execute();
-    }
+        $stmt->bindParam(':status', $data['status']);
+        $stmt->bindParam(':password', $password);
+        $stmt->bindParam(':role', $data['role']);
+        echo $password;
+        try {
+            $stmt->execute();
+            echo "executed";
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+        }    }
 
     public function read($id) {
         $sql = "SELECT * FROM users WHERE id = :id";
@@ -51,6 +65,18 @@ abstract class User implements CrudInterface, UserInterface {
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }
+    public function activate($id) {
+        $sql = "UPDATE public.users SET status = 'ACCEPTED'  where id_user = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
+    public function suspend($id) {
+        $sql = "UPDATE public.users SET status = 'BANED'  where id_user = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
 
     public function getAll() {
         $sql = "SELECT * FROM users WHERE role <> :role";
@@ -65,26 +91,10 @@ abstract class User implements CrudInterface, UserInterface {
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':id_user', $this->role);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-
-    public function getRole() {
-        return $this->role;
-    }
-
-    public function getId() {
-        return $this->id;
-    }
-
-    public function getUsername() {
-        return $this->username;
-    }
-
-    public function getEmail() {
-        return $this->email;
-    }
-
+    // Implement UserInterface methods
 
     abstract public function getSpecificData();
 }
